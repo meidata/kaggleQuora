@@ -110,6 +110,9 @@ train_features = pd.concat([train_data[train_data.columns.difference(['question1
                              train_w2v_q2,
                              train_comb[train_comb.columns.difference(['id','is_duplicate'])]], axis=1)
     #.tocsr()
+    
+train_X = train_features.
+train_y
 
     
 test_features = pd.concat([test_data[test_data.columns.difference(['question1', 'question2'])],
@@ -118,6 +121,35 @@ test_features = pd.concat([test_data[test_data.columns.difference(['question1', 
                             test_comb[test_comb.columns.difference(['id'])]],axis=1)
     #.tocsr()
     
+
+
+
+# add cross validation
+
+from sklearn.model_selection import StratifiedKFold
+from sklearn.grid_search import GridSearchCV
+import xgboost as xgb
+
+
+
+skf = StratifiedKFold(n_splits=10)
+
+for train, test in skf.split(train_X, train_y):
+    
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+
+#---------------------------------------------------------------------
     
 
 from sklearn.model_selection import train_test_split
@@ -135,21 +167,6 @@ train_X = train_X[train_X.columns.difference(['is_duplicate'])]
 
 test_y = test_X.is_duplicate.values
 test_X = test_X[test_X.columns.difference(['is_duplicate'])]
-
-
-
-
-# add cross validation
-
-from sklearn.grid_search import GridSearchCV
-
-
-
-
-
-
-
-import xgboost as xgb
 
 # Set our parameters for xgboost
 params = {}
