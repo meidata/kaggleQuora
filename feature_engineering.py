@@ -14,6 +14,9 @@ from tqdm import tqdm
 from scipy.stats import skew, kurtosis
 from scipy.spatial.distance import cosine, cityblock, jaccard, canberra, euclidean, minkowski, braycurtis
 from nltk import word_tokenize
+from sklearn.decomposition import TruncatedSVD
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import Normalizer
 stop_words = stopwords.words('english')
 
 
@@ -155,6 +158,20 @@ def generateFS(data,file):
     
 
     
+    svd = TruncatedSVD(100)
+    lsa = make_pipeline(svd, Normalizer(copy=False))
+    
+    # Run SVD on the training data, then project the training data.
+    w2v_q1_lsa = lsa.fit_transform(np.nan_to_num(question1_vectors))
+    w2v_q2_lsa = lsa.fit_transform(np.nan_to_num(question2_vectors))
+    
+    
+    np.save(file + '_w2v_q1_lsa.npy', w2v_q1_lsa,allow_pickle=True)
+    np.save(file + '_w2v_q2_lsa.npy', w2v_q2_lsa,allow_pickle=True)
+
+
+
+    
     print('..dumping features..\n')
     pickle.dump(question1_vectors, open(path_feature+file+'_q1_w2v_google.pkl', 'wb'), -1)
     pickle.dump(question2_vectors, open(path_feature+file+'_q2_w2v_google.pkl', 'wb'), -1)
@@ -162,6 +179,9 @@ def generateFS(data,file):
 #    data.to_csv(path+file+'_quora_features.csv', index=False)
     data.to_pickle(path_feature+file+'_quora_features.pkl')
     print('..done..')
+    
+    
+
     
     
 path = '/Users/meiyi/Desktop/kaggle_quora/'

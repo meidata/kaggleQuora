@@ -35,6 +35,8 @@ for i in range(0,10):
     ary = np.load(path_feature+filename)
     data = pd.DataFrame(ary,columns=['q1_' + i for i in list(map(str,range(0,ary.shape[1])))])
     test_w2v_q1 = test_w2v_q1.append(data)
+    
+test_w2v_q1 = test_w2v_q1.as_matrix()
 
 test_w2v_q2 = pd.DataFrame()
 
@@ -43,22 +45,49 @@ for i in range(0,10):
     ary = np.load(path_feature+filename)
     data = pd.DataFrame(ary,columns=['q2_' + i for i in list(map(str,range(0,ary.shape[1])))])
     test_w2v_q2 = test_w2v_q2.append(data)
+    
+test_w2v_q2 = test_w2v_q2.as_matrix()
+
+train_w2v_q1 = pd.read_pickle(path_feature+'train_q1_w2v_google.pkl')
+train_w2v_q2 = pd.read_pickle(path_feature+'train_q2_w2v_google.pkl')
+
+#train_w2v_q1 = np.load(path_feature+'train_q1_w2v_google.pkl')
+#train_w2v_q1 = pd.DataFrame(train_w2v_q1,columns=['q1_' + i for i in list(map(str,range(0,train_w2v_q1.shape[1])))])
+#  
+#train_w2v_q2 = np.load(path_feature+'train_q2_w2v_google.pkl')
+#train_w2v_q2 = pd.DataFrame(train_w2v_q2,columns=['q2_' + i for i in list(map(str,range(0,train_w2v_q2.shape[1])))])
 
 
-train_w2v_q1 = np.load(path_feature+'train_q1_w2v_google.pkl')
-train_w2v_q1 = pd.DataFrame(train_w2v_q1,columns=['q1_' + i for i in list(map(str,range(0,train_w2v_q1.shape[1])))])
-  
-train_w2v_q2 = np.load(path_feature+'train_q2_w2v_google.pkl')
-train_w2v_q2 = pd.DataFrame(train_w2v_q2,columns=['q2_' + i for i in list(map(str,range(0,train_w2v_q2.shape[1])))])
-  
+
+# lsa features
+
+from sklearn.decomposition import TruncatedSVD
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import Normalizer
+
+svd = TruncatedSVD(100)
+lsa = make_pipeline(svd, Normalizer(copy=False))
+
+# Run SVD on the training data, then project the training data.
+train_w2v_q1_lsa = lsa.fit_transform(np.nan_to_num(train_w2v_q1))
+train_w2v_q2_lsa = lsa.fit_transform(np.nan_to_num(train_w2v_q2))
+
+
+test_w2v_q1_lsa = lsa.fit_transform(np.nan_to_num(test_w2v_q1))
+test_w2v_q2_lsa = lsa.fit_transform(np.nan_to_num(test_w2v_q2))
+
+np.save('train_w2v_q1_lsa.npy', train_w2v_q1_lsa,allow_pickle=True)
+np.save('train_w2v_q2_lsa.npy', train_w2v_q2_lsa,allow_pickle=True)
+np.save('test_w2v_q1_lsa.npy', test_w2v_q1_lsa,allow_pickle=True)
+np.save('test_w2v_q2_lsa.npy', test_w2v_q2_lsa,allow_pickle=True)
+
+
 
 
 # magic features 
 
 train_comb = pd.read_pickle(path_feature+'magic_feature_train.pkl')
 test_comb = pd.read_pickle(path_feature+'magic_feature_test.pkl')
-
-
 
 
 # features stacking
