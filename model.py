@@ -81,6 +81,19 @@ np.save('train_w2v_q2_lsa.npy', train_w2v_q2_lsa,allow_pickle=True)
 np.save('test_w2v_q1_lsa.npy', test_w2v_q1_lsa,allow_pickle=True)
 np.save('test_w2v_q2_lsa.npy', test_w2v_q2_lsa,allow_pickle=True)
 
+train_w2v_q1 = np.load(path_feature+'train_w2v_q1_lsa.npy')
+train_w2v_q1 = pd.DataFrame(train_w2v_q1,columns=['q1_' + i for i in list(map(str,range(0,train_w2v_q1.shape[1])))])
+  
+train_w2v_q2 = np.load(path_feature+'train_w2v_q2_lsa.npy')
+train_w2v_q2 = pd.DataFrame(train_w2v_q2,columns=['q2_' + i for i in list(map(str,range(0,train_w2v_q2.shape[1])))])
+
+
+
+test_w2v_q1 = np.load(path_feature+'test_w2v_q1_lsa.npy')
+test_w2v_q1 = pd.DataFrame(test_w2v_q1,columns=['q1_' + i for i in list(map(str,range(0,test_w2v_q1.shape[1])))])
+  
+test_w2v_q2 = np.load(path_feature+'test_w2v_q2_lsa.npy')
+test_w2v_q2 = pd.DataFrame(test_w2v_q2,columns=['q2_' + i for i in list(map(str,range(0,test_w2v_q2.shape[1])))])
 
 
 
@@ -93,15 +106,15 @@ test_comb = pd.read_pickle(path_feature+'magic_feature_test.pkl')
 # features stacking
 
 train_features = pd.concat([train_data[train_data.columns.difference(['question1', 'question2'])],
-                             #train_w2v_q1,
-                             #train_w2v_q2,
+                             train_w2v_q1,
+                             train_w2v_q2,
                              train_comb[train_comb.columns.difference(['id','is_duplicate'])]], axis=1)
     #.tocsr()
 
     
 test_features = pd.concat([test_data[test_data.columns.difference(['question1', 'question2'])],
-                            #test_w2v_q1
-                            #test_w2v_q2,
+                           test_w2v_q1,
+                            test_w2v_q2,
                             test_comb[test_comb.columns.difference(['id'])]],axis=1)
     #.tocsr()
     
@@ -122,6 +135,17 @@ train_X = train_X[train_X.columns.difference(['is_duplicate'])]
 
 test_y = test_X.is_duplicate.values
 test_X = test_X[test_X.columns.difference(['is_duplicate'])]
+
+
+
+
+# add cross validation
+
+from sklearn.grid_search import GridSearchCV
+
+
+
+
 
 
 
@@ -162,7 +186,7 @@ sub = pd.DataFrame()
 sub['test_id'] = test_comb['id']
 sub['is_duplicate'] = p_test
 path = '/Users/meiyi/Desktop/kaggle_quora/'
-sub.to_csv(path+'xgb_1405.csv', index=False)
+sub.to_csv(path+'xgb_1505.csv', index=False)
     
 
 
