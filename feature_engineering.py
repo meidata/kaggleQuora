@@ -8,6 +8,7 @@ import pickle
 import pandas as pd
 import numpy as np
 import gensim
+import re 
 from fuzzywuzzy import fuzz
 from nltk.corpus import stopwords
 from tqdm import tqdm
@@ -28,7 +29,26 @@ norm_model.init_sims(replace=True)
 
 path_feature = '/Users/meiyi/Desktop/kaggle_quora/features/'
 
-def generateFS(data,file):
+def generateFS(data,file,no_contractions=False):
+    
+    def unpack_contractions(text):
+
+        # standard
+        text = re.sub(r"(\b)([Aa]re|[Cc]ould|[Dd]id|[Dd]oes|[Dd]o|[Hh]ad|[Hh]as|[Hh]ave|[Ii]s|[Mm]ight|[Mm]ust|[Ss]hould|[Ww]ere|[Ww]ould)n't", r"\1\2 not", text)
+        text = re.sub(r"(\b)([Hh]e|[Ii]|[Ss]he|[Tt]hey|[Ww]e|[Ww]hat|[Ww]ho|[Yy]ou)'ll", r"\1\2 will", text)
+        text = re.sub(r"(\b)([Tt]hey|[Ww]e|[Ww]hat|[Ww]ho|[Yy]ou)'re", r"\1\2 are", text)
+        text = re.sub(r"(\b)([Ii]|[Ss]hould|[Tt]hey|[Ww]e|[Ww]hat|[Ww]ho|[Ww]ould|[Yy]ou)'ve", r"\1\2 have", text)
+        # non-standard
+        text = re.sub(r"(\b)([Cc]a)n't", r"\1\2n not", text)
+        text = re.sub(r"(\b)([Ii])'m", r"\1\2 am", text)
+        text = re.sub(r"(\b)([Ll]et)'s", r"\1\2 us", text)
+        text = re.sub(r"(\b)([Ww])on't", r"\1\2ill not", text)
+        text = re.sub(r"(\b)([Ss])han't", r"\1\2hall not", text)
+        text = re.sub(r"(\b)([Yy])(?:'all|a'll)", r"\1\2ou all", text)
+        return text
+        
+    
+    
     def wmd(s1, s2):
         s1 = str(s1).lower().split()
         s2 = str(s2).lower().split()
@@ -77,6 +97,16 @@ def generateFS(data,file):
     Number of words in question2
     Number of common words in question1 and question2
     '''
+    
+        
+    
+    if no_contractions == True:
+        
+        data = unpack_contractions(data)
+
+    
+    
+    
     print('..basic features..\n')
     data['len_q1'] = data.question1.apply(lambda x: len(str(x)))
     data['len_q2'] = data.question2.apply(lambda x: len(str(x)))
