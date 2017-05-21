@@ -18,18 +18,32 @@ from nltk import word_tokenize
 from sklearn.decomposition import TruncatedSVD
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import Normalizer
+import platform
 stop_words = stopwords.words('english')
 
+def setPath():
+    if platform.system() == 'Darwin':
+        path_w2v = '/Volumes/MyPassport/kaggle_quora/w2v_pretrained/'
+        path_data= '/Volumes/MyPassport/kaggle_quora/data/'
+        path_feature = '/Volumes/MyPassport/kaggle_quora/features/'
+        path_unpack = '/Volumes/MyPassport/kaggle_quora/features/un_pack/'
+        return path_w2v,path_data,path_feature,path_unpack
+    elif platform.system() == 'Darwin':
+        path_w2v = 'D:\\kaggle_quora\\w2v_pretrained\\'
+        path_data= 'D:\\kaggle_quora\\data\\'
+        path_feature = 'D:\\kaggle_quora\\features\\'
+        return path_w2v,path_data,path_feature,path_unpack
+        
+path_w2v,path_data,path_feature,path_unpack = setPath()
 
-path_w2v = '/Users/meiyi/Desktop/kaggle_quora/w2v_pretrained/'
 model = gensim.models.KeyedVectors.load_word2vec_format(path_w2v+'GoogleNews-vectors-negative300.bin.gz', binary=True)
  
 norm_model = gensim.models.KeyedVectors.load_word2vec_format(path_w2v+'GoogleNews-vectors-negative300.bin.gz', binary=True)
 norm_model.init_sims(replace=True)
 
-path_feature = '/Users/meiyi/Desktop/kaggle_quora/features/'
 
-def generateFS(data,file,no_contractions=False):
+
+def generateFS(data,file,path,no_contractions=False):
     
     def unpack_contractions(text):
 
@@ -102,7 +116,9 @@ def generateFS(data,file,no_contractions=False):
     
     if no_contractions == True:
         
-        data = unpack_contractions(data)
+        data['question1'] = data.question1.apply(lambda x: unpack_contractions(str(x)))
+        data['question2'] = data.question2.apply(lambda x: unpack_contractions(str(x)))
+
 
     
     
@@ -203,19 +219,16 @@ def generateFS(data,file,no_contractions=False):
 
     
     print('..dumping features..\n')
-    pickle.dump(question1_vectors, open(path_feature+file+'_q1_w2v_google.pkl', 'wb'), -1)
-    pickle.dump(question2_vectors, open(path_feature+file+'_q2_w2v_google.pkl', 'wb'), -1)
+    pickle.dump(question1_vectors, open(path+file+'_q1_w2v_google.pkl', 'wb'), -1)
+    pickle.dump(question2_vectors, open(path+file+'_q2_w2v_google.pkl', 'wb'), -1)
     
 #    data.to_csv(path+file+'_quora_features.csv', index=False)
-    data.to_pickle(path_feature+file+'_quora_features.pkl')
+    data.to_pickle(path+file+'_quora_features.pkl')
     print('..done..')
     
     
 
-    
-    
-path = '/Users/meiyi/Desktop/kaggle_quora/'
-data = pd.read_csv(path+'test.csv')
+data = pd.read_csv(path_data+'test.csv')
 data = data[[x for x in data.columns.values if 'id' not in x]]
 data_1,data_2,data_3,data_4,data_5,data_6,data_7,data_8,data_9,data_10=np.array_split(data, 10)
 
@@ -223,7 +236,7 @@ data_1,data_2,data_3,data_4,data_5,data_6,data_7,data_8,data_9,data_10=np.array_
 for i in list(range(0,10)):
     print(i)
     temp = [data_1,data_2,data_3,data_4,data_5,data_6,data_7,data_8,data_9,data_10]
-    generateFS(temp[i],'test_'+str(i))
+    generateFS(temp[i],'test_'+str(i),path_unpack,True)
 
 
 
