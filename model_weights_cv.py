@@ -173,7 +173,7 @@ sub = pd.DataFrame()
 sub['test_id'] = test_comb['id']
 sub['is_duplicate'] = p_test
 
-sub.to_csv(path_data+'xgb_2005_0.2_0.6_9_no_intersec_onlyporter_.csv', index=False)
+sub.to_csv(path_data+'xgb_2305_0.2_0.8_9_no_intersec_agle_.csv', index=False)
 
 
 
