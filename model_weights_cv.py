@@ -9,22 +9,22 @@ Created on Sun May 14 17:08:27 2017
 import platform
 import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-from collections import defaultdict
+
 
 def setPath():
     if platform.system() == 'Darwin':
         path_w2v = '/Volumes/MyPassport/kaggle_quora/w2v_pretrained/'
         path_data= '/Volumes/MyPassport/kaggle_quora/data/'
         path_feature = '/Volumes/MyPassport/kaggle_quora/features/'
-        path_unpack = '/Volumes/MyPassport/kaggle_quora/features/un_pack/'
-        return path_w2v,path_data,path_feature,path_unpack
-    elif platform.system() == 'Darwin':
+ 
+        return path_w2v,path_data,path_feature 
+    elif platform.system() == 'Windows':
         path_w2v = 'D:\\kaggle_quora\\w2v_pretrained\\'
         path_data= 'D:\\kaggle_quora\\data\\'
         path_feature = 'D:\\kaggle_quora\\features\\'
-        return path_w2v,path_data,path_feature,path_unpack
+        return path_w2v,path_data,path_feature 
         
-path_w2v,path_data,path_feature,path_unpack = setPath()
+path_w2v,path_data,path_feature  = setPath()
 
 
 # basic features ---- features engineering
@@ -39,7 +39,7 @@ for i in range(0,10):
     
 train_data = pd.read_pickle(path_feature + 'train_quora_features.pkl')
 
-
+'''
 ques = pd.concat([train_data[['question1', 'question2']], \
         test_data[['question1', 'question2']]], axis=0).reset_index(drop='index')
 
@@ -61,7 +61,7 @@ test_data['q1_q2_intersect'] = test_data.apply(q1_q2_intersect, axis=1, raw=True
 
 train_data[['q1_q2_intersect']].to_pickle(path_feature + 'train_intersect.pkl')
 test_data[['q1_q2_intersect']].to_pickle(path_feature + 'test_intersect.pkl')
-
+'''
 
 
 #train_w2v_q1 = np.load(path_feature+'train_q1_w2v_google.pkl')
@@ -90,24 +90,33 @@ test_comb = pd.read_pickle(path_feature+'magic_feature_test.pkl')
 # features stacking
  
 
-train_data['weights']= [ np.random.uniform(0.2,0.3) if x == 1 else
-                         np.random.uniform(0.6,0.7) for x in train_data['is_duplicate']]
+train_data['weights']= [ np.random.uniform(0.2,0.21) if x == 1 else
+                         np.random.uniform(0.8,0.81) for x in train_data['is_duplicate']]
 
 
 train_features = pd.concat([train_data[train_data.columns.difference(['question1', 'question2'])],
                                        train_porter_intersec,
-                                       #train_intersec,
-                             train_comb[train_comb.columns.difference(['id','is_duplicate'])]], axis=1)
+                                       train_intersec,
+                             train_comb[train_comb.columns.difference(['id','is_duplicate','q1_hash', 'q2_hash'])]], axis=1)
     #.tocsr()
     
 
 test_features = pd.concat([test_data[test_data.columns.difference(['question1', 'question2'])],
                                      test_porter_intersec,
-                                     #test_intersec,
-                            test_comb[test_comb.columns.difference(['id'])]],axis=1)
+                                     test_intersec,
+                            test_comb[test_comb.columns.difference(['q1_hash', 'q2_hash','id'])]],axis=1)
     #.tocsr()
-    
 
+'''
+np.save(path_feature +'train_feature_with_intersec_no_hash.npy',
+        train_features[train_features.columns.difference(['id','q1_hash','q2_hash','is_duplicate'])].values,allow_pickle=True)
+
+np.save(path_feature +'test_feature_with_intersec_no_hash.npy',
+        test_features[test_features.columns.difference(['id','q1_hash','q2_hash'])].values,allow_pickle=True)
+
+np.save(path_feature +'train_is_duplicate.npy',
+        train_features['is_duplicate'].values,allow_pickle=True)
+'''
 
 from sklearn.model_selection import train_test_split
 
@@ -121,11 +130,11 @@ test_X = pos_test.append(neg_test)
 
 train_y = train_X.is_duplicate.values
 weight_X = train_X.weights.values
-train_X = train_X[train_X.columns.difference(['is_duplicate','weights'])]
+train_X = train_X[train_X.columns.difference(['is_duplicate'])] # remove weights for ensemble
 
 test_y = test_X.is_duplicate.values
 weight_x = test_X.weights.values
-test_X = test_X[test_X.columns.difference(['is_duplicate','weights'])]
+test_X = test_X[test_X.columns.difference(['is_duplicate'])]
 
 # Set our parameters for xgboost
 
