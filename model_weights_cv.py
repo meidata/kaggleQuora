@@ -81,6 +81,13 @@ train_intersec = pd.read_pickle(path_feature + 'train_intersect.pkl')
 test_intersec = pd.read_pickle(path_feature + 'test_intersect.pkl')
 
 
+train_angle = pd.DataFrame(pd.read_pickle(path_feature+'train_q1_q2_angle.pickle'),
+                                     columns = ['angle'])
+
+test_angle = pd.DataFrame(pd.read_pickle(path_feature+'test_q1_q2_angle.pickle'),
+										columns = ['angle'])
+
+
 # magic features 
 
 train_comb = pd.read_pickle(path_feature+'magic_feature_train.pkl')
@@ -97,6 +104,7 @@ train_data['weights']= [ np.random.uniform(0.2,0.21) if x == 1 else
 train_features = pd.concat([train_data[train_data.columns.difference(['question1', 'question2'])],
                                        train_porter_intersec,
                                        train_intersec,
+                                       train_angle,
                              train_comb[train_comb.columns.difference(['id','is_duplicate','q1_hash', 'q2_hash'])]], axis=1)
     #.tocsr()
     
@@ -104,6 +112,7 @@ train_features = pd.concat([train_data[train_data.columns.difference(['question1
 test_features = pd.concat([test_data[test_data.columns.difference(['question1', 'question2'])],
                                      test_porter_intersec,
                                      test_intersec,
+                                     test_angle,
                             test_comb[test_comb.columns.difference(['q1_hash', 'q2_hash','id'])]],axis=1)
     #.tocsr()
 
@@ -130,11 +139,11 @@ test_X = pos_test.append(neg_test)
 
 train_y = train_X.is_duplicate.values
 weight_X = train_X.weights.values
-train_X = train_X[train_X.columns.difference(['is_duplicate'])] # remove weights for ensemble
+train_X = train_X[train_X.columns.difference(['is_duplicate','weights'])] # remove weights for ensemble
 
 test_y = test_X.is_duplicate.values
 weight_x = test_X.weights.values
-test_X = test_X[test_X.columns.difference(['is_duplicate'])]
+test_X = test_X[test_X.columns.difference(['is_duplicate','weights'])]
 
 # Set our parameters for xgboost
 
