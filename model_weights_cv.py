@@ -94,6 +94,15 @@ train_comb = pd.read_pickle(path_feature+'magic_feature_train.pkl')
 test_comb = pd.read_pickle(path_feature+'magic_feature_test.pkl')
 
 
+
+train_location = pd.read_pickle(path_feature +'train_location_matching.pkl')
+test_location = pd.read_pickle(path_feature +'test_location_matching.pkl')
+
+
+train_location['location_ratio']=np.nan_to_num(train_location['z_place_mismatch_num']/train_location['z_place_match_num'])
+test_location['location_ratio']=np.nan_to_num(test_location['z_place_mismatch_num']/test_location['z_place_match_num'])
+
+
 # features stacking
  
 
@@ -101,18 +110,21 @@ train_data['weights']= [ np.random.uniform(0.2,0.21) if x == 1 else
                          np.random.uniform(0.8,0.81) for x in train_data['is_duplicate']]
 
 
+
 train_features = pd.concat([train_data[train_data.columns.difference(['question1', 'question2'])],
                                        train_porter_intersec,
-                                       train_intersec,
+                                       #train_intersec,
                                        train_angle,
+                                       train_location['location_ratio'],
                              train_comb[train_comb.columns.difference(['id','is_duplicate','q1_hash', 'q2_hash'])]], axis=1)
     #.tocsr()
     
 
 test_features = pd.concat([test_data[test_data.columns.difference(['question1', 'question2'])],
                                      test_porter_intersec,
-                                     test_intersec,
+                                     #test_intersec,
                                      test_angle,
+                                     test_location['location_ratio'],
                             test_comb[test_comb.columns.difference(['q1_hash', 'q2_hash','id'])]],axis=1)
     #.tocsr()
 
@@ -173,10 +185,6 @@ sub = pd.DataFrame()
 sub['test_id'] = test_comb['id']
 sub['is_duplicate'] = p_test
 
-sub.to_csv(path_data+'xgb_2305_0.2_0.8_9_no_intersec_agle_.csv', index=False)
-
-
-
-    
+sub.to_csv(path_data+'xgb_2505_0.2_0.8_9_no_intersec_angle_location_ratio_.csv', index=False)
 
 
